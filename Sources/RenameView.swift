@@ -153,6 +153,16 @@ struct RenameView: View {
                 groupBox("Date") {
                     Toggle("Append date", isOn: model.binding(\.useDate))
                     if model.settings.useDate {
+                        Picker("Date source", selection: model.binding(\.dateSource)) {
+                            ForEach(DateSource.allCases, id: \.self) { Text($0.rawValue) }
+                        }
+                        .pickerStyle(.segmented)
+
+                        if model.settings.dateSource == .custom {
+                            DatePicker("Pick date", selection: model.binding(\.customDate), displayedComponents: .date)
+                                .datePickerStyle(.compact)
+                        }
+
                         let dateFormats: [(String, String)] = [
                             ("2026-08-30", "yyyy-MM-dd"),
                             ("08-30-2026", "MM-dd-yyyy"),

@@ -20,6 +20,11 @@ enum CaseMode: String, Equatable, CaseIterable, Codable {
     case uppercase = "Uppercase"
 }
 
+enum DateSource: String, Equatable, CaseIterable, Codable {
+    case fileModified = "File Modified"
+    case custom = "Custom"
+}
+
 struct RenameSettings: Equatable {
     var findText = ""
     var replaceText = ""
@@ -34,6 +39,8 @@ struct RenameSettings: Equatable {
     var newExtension = ""
     var useDate = false
     var dateFormat = "yyyy-MM-dd"
+    var dateSource: DateSource = .fileModified
+    var customDate = Date()
 }
 
 struct RenamePreset: Identifiable, Codable {
@@ -181,7 +188,14 @@ final class RenameModel: ObservableObject {
             if s.useDate {
                 let formatter = DateFormatter()
                 formatter.dateFormat = s.dateFormat
-                let dateStr = formatter.string(from: entry.url.modificationDate ?? Date())
+                let sourceDate: Date
+                switch s.dateSource {
+                case .fileModified:
+                    sourceDate = entry.url.modificationDate ?? Date()
+                case .custom:
+                    sourceDate = s.customDate
+                }
+                let dateStr = formatter.string(from: sourceDate)
                 name = name + "_" + dateStr
             }
 
@@ -285,6 +299,16 @@ extension RenameModel {
 
     func binding(_ keyPath: WritableKeyPath<RenameSettings, CaseMode>) -> Binding<CaseMode> {
         Binding(get: { [weak self] in self?.settings[keyPath: keyPath] ?? .none },
+                set: { [weak self] in self?.settings[keyPath: keyPath] = $0 })
+    }
+
+    func binding(_ keyPath: WritableKeyPath<RenameSettings, DateSource>) -> Binding<DateSource> {
+        Binding(get: { [weak self] in self?.settings[keyPath: keyPath] ?? .fileModified },
+                set: { [weak self] in self?.settings[keyPath: keyPath] = $0 })
+    }
+
+    func binding(_ keyPath: WritableKeyPath<RenameSettings, Date>) -> Binding<Date> {
+        Binding(get: { [weak self] in self?.settings[keyPath: keyPath] ?? Date() },
                 set: { [weak self] in self?.settings[keyPath: keyPath] = $0 })
     }
 }
