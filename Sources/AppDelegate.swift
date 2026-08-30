@@ -4,7 +4,7 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    private var panel: NSPanel?
     let model = RenameModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -15,34 +15,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = NSImage(systemSymbolName: "character.cursor.ibeam", accessibilityDescription: "RenameIt")
             button.imagePosition = .imageLeading
             button.target = self
+            button.action = #selector(togglePanel(_:))
+        }
+    }
+
+    @objc private func togglePanel(_ sender: Any?) {
+        if let panel, panel.isVisible {
+            panel.orderOut(nil)
+            return
         }
 
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 520, height: 620)
-        popover.behavior = .transient
-        popover.contentViewController = NSHostingController(
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 620),
+            styleMask: [.titled, .closable, .utilityWindow, .hudWindow, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        panel.title = "RenameIt"
+        panel.isFloatingPanel = true
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.isReleasedWhenClosed = false
+        panel.hidesOnDeactivate = false
+
+        let hostingView = NSHostingController(
             rootView: RenameView(model: model) { [weak self] in
-                self?.togglePopover()
+                self?.panel?.orderOut(nil)
             }
         )
+        panel.contentViewController = hostingView
 
-        statusItem.button?.action = #selector(togglePopover(_:))
-    }
-
-    @objc private func togglePopover(_ sender: Any?) {
-        if let button = statusItem.button {
-            if popover.isShown {
-                popover.performClose(sender)
-            } else {
-                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-                popover.contentViewController?.view.window?.makeKey()
-            }
+        if let button = statusItem.button, let window = button.window {
+            var point = window.convertPoint(toScreen: NSPoint(x: button.bounds.midX, y: button.bounds.minY))
+            point.x -= panel.frame.width / 2
+            point.y -= panel.frame.height
+            panel.setFrameOrigin(point)
+        } else {
+            panel.center()
         }
-    }
 
-    private func togglePopover() {
-        if let button = statusItem.button {
-            togglePopover(button)
-        }
+        panel.orderFront(nil)
+        panel.makeKeyAndOrderFront(nil)
+        self.panel = panel
     }
 }
