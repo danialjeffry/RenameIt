@@ -37,10 +37,6 @@ final class RenameModel: ObservableObject {
             .debounce(for: .milliseconds(80), scheduler: RunLoop.main)
             .sink { [weak self] _ in self?.recompute() }
             .store(in: &cancellables)
-        $files
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.recompute() }
-            .store(in: &cancellables)
     }
 
     func addFiles(_ urls: [URL]) {
