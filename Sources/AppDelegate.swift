@@ -63,7 +63,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 740),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 900),
             styleMask: [.titled, .closable, .utilityWindow, .resizable],
             backing: .buffered,
             defer: false

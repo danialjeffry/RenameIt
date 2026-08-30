@@ -23,7 +23,7 @@ struct RenameView: View {
             footer
         }
         .padding(14)
-        .frame(width: 540, height: 740)
+        .frame(width: 540, height: 900)
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             loadFiles(from: providers)
             return true
@@ -153,15 +153,50 @@ struct RenameView: View {
                 groupBox("Date") {
                     Toggle("Append date", isOn: model.binding(\.useDate))
                     if model.settings.useDate {
-                        TextField("Date format (yyyy-MM-dd)", text: model.binding(\.dateFormat))
+                        let dateFormats: [(String, String)] = [
+                            ("2026-08-30", "yyyy-MM-dd"),
+                            ("08-30-2026", "MM-dd-yyyy"),
+                            ("30-08-2026", "dd-MM-yyyy"),
+                            ("20260830", "yyyyMMdd"),
+                            ("Aug 30, 2026", "MMM d, yyyy"),
+                            ("2026-08-30 14-30", "yyyy-MM-dd HH-mm"),
+                        ]
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                ForEach(dateFormats, id: \.1) { example, format in
+                                    Button {
+                                        model.settings.dateFormat = format
+                                    } label: {
+                                        VStack(spacing: 2) {
+                                            Text(example)
+                                                .font(.caption2)
+                                                .foregroundColor(model.settings.dateFormat == format ? .white : .primary)
+                                            Text(format)
+                                                .font(.system(size: 9))
+                                                .foregroundColor(model.settings.dateFormat == format ? .white : .secondary)
+                                        }
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 6)
+                                                .fill(model.settings.dateFormat == format ? Color.accentColor : Color.gray.opacity(0.15))
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        TextField("Custom format (yyyy-MM-dd)", text: model.binding(\.dateFormat))
+                            .textFieldStyle(.roundedBorder)
                             .font(.caption)
                     }
                 }
 
                 presetsSection
             }
+            .padding(.vertical, 4)
         }
-        .frame(height: 380)
+        .frame(height: 500)
     }
 
     private var presetsSection: some View {
