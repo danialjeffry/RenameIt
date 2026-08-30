@@ -26,12 +26,18 @@ No Dock icon, no setup — it lives quietly in your menu bar until you need it.
 
 ## Requirements
 
+### macOS
 - macOS **14.0 (Sonoma)** or later
 - An **Apple Silicon** Mac (M1/M2/M3/M4...) — build script targets arm64.
 - Xcode Command Line Tools (to build from source):
   ```bash
   xcode-select --install
   ```
+
+### Windows
+- Windows 10/11
+- Python 3.9+ (for running from source)
+- Or download the `.exe` from [Releases](https://github.com/danialjeffry/RenameIt/releases) (no Python needed)
 
 ---
 
@@ -80,13 +86,20 @@ as they would be written. Apply when you're happy.
 
 ```
 RenameIt/
-├── Sources/             # Swift source files
-│   ├── RenameItApp.swift     # App entry point
-│   ├── AppDelegate.swift     # Menu bar item + popover
-│   ├── RenameModel.swift     # Rename engine + live preview state
-│   └── RenameView.swift      # SwiftUI drag-drop control panel
+├── Sources/             # macOS Swift source files
+│   ├── RenameItApp.swift
+│   ├── AppDelegate.swift
+│   ├── RenameModel.swift
+│   └── RenameView.swift
 ├── Scripts/
-│   └── build.sh              # Build script (produces RenameIt.app)
+│   └── build.sh              # Build macOS .app
+├── windows/             # Windows Python version
+│   ├── RenameIt.py           # Main app (all features)
+│   ├── build.bat             # Build to .exe
+│   ├── requirements.txt
+│   └── README.md
+├── .github/workflows/
+│   └── build-windows.yml     # Auto-builds .exe on release
 └── README.md
 ```
 

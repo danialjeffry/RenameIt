@@ -1,0 +1,48 @@
+name: Build Windows .exe
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          cd windows
+          pip install customtkinter pyinstaller
+          pip install tkinterdnd2 || echo "tkinterdnd2 not available, building without DnD"
+
+      - name: Build .exe
+        run: |
+          cd windows
+          python -c "import tkinterdnd2" 2>nul
+          if %errorlevel%==0 (
+            echo Building WITH drag-and-drop...
+            pyinstaller --noconfirm --onefile --windowed --name "RenameIt" --collect-data tkinterdnd2 --hidden-import tkinterdnd2 RenameIt.py
+          ) else (
+            echo Building WITHOUT drag-and-drop...
+            pyinstaller --noconfirm --onefile --windowed --name "RenameIt" RenameIt.py
+          )
+
+      - name: Upload .exe to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: windows/dist/RenameIt.exe
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
